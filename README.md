@@ -18,4 +18,4 @@ Will download a public IP List and create a list with IP only, one per line in a
 
 ### IP List Sources
 Critical Path Security gits: https://raw.githubusercontent.com/CriticalPathSecurity/Public-Intelligence-Feeds/master/log4j.txt  
-gnremy gits: https://gist.githubusercontent.com/gnremy/c546c7911d5f876f263309d7161a7217/raw
+gnremy gits: https://gist.githubusercontent.com/gnremy/c546c7911d5f876f263309d7161a7217
