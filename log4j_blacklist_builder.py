@@ -1,3 +1,4 @@
+from os import write
 from typing import Counter
 import requests
 import csv
@@ -33,6 +34,7 @@ parser.add_argument('source', type=str,
 parser.add_argument('format', type=str,
     help='R|Firewall Format to generate the configuration \n'
         'ASA:       Format the output to be used as command line configuration on Cisco ASA Firewalls.\n'
+        'FORTIGATE: Format the output to be used as commadn line configuration on Fortinet FortiGate Firewalls.\n'
         'List:      Format the out as a IP list only.'
         )
 args = parser.parse_args()
@@ -40,7 +42,7 @@ IP_source = args.source
 firewall_format = args.format
 
 #Firewall Format validation
-if firewall_format.upper() != 'ASA' and firewall_format.upper() != 'LIST':
+if firewall_format.upper() != 'ASA' and firewall_format.upper() != 'LIST' and firewall_format.upper() != 'FORTIGATE':
     raise SystemExit(firewall_format + ' is not a valid output format.')
 
 #URL Setting based on source argument
@@ -109,6 +111,23 @@ if firewall_format.upper() == 'ASA':
     for line in IP_list:
         file.write("network-object host " + line.rstrip() + "\n")
         IP_count += 1
+
+#Saving output to FortiGate format
+if firewall_format.upper() == 'FORTIGATE':
+    file.write("config firewall address\n")
+    for line in IP_list:
+        file.write(" edit Log4j_Host_" + line.rstrip() + "\n")
+        file.write("  set subnet " + line.rstrip() + " 255.255.255.255\n")
+        file.write(" next\n")
+        IP_count += 1
+    
+    file.write(" end\n")
+    file.write("config firewall addrgrp\n")
+    file.write(" edit Log4j_Blacklist_IP\n")
+    for line in IP_list:
+        file.write("  append Log4j_Host_" + line.rstrip() + "\n")
+    file.write(" next\n")
+    file.write(" end")    
 
 print('Total IP from Source: ' + str(IP_count))
 print('File out/log4j_' + firewall_format.upper() + '_' + URL_source + '_' + current_time + '.txt created.')
