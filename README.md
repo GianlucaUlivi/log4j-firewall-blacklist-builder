@@ -9,11 +9,13 @@
 ## log4j_blacklist_builder.py
 All in one script.
 Run "python3 log4j_blacklist_builder.py -h" for help.
+
 Multiple input source:
 - gnremy git
 - Critical Path Security (CPS) gits
 - Custom URL (must be a raw IP list)
 - Local File (must be a raw IP list)
+
 Multiple Output formats:
  - Cisco ASA
  - Fortinet Fortigate
