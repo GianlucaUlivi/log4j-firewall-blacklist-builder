@@ -22,13 +22,16 @@ current_time = datetime.datetime.now().strftime("%Y-%b-%d_%H-%M")
 IP_count = 0
 IP_list = []
 source_is_local_file = False
+supported_formats = ['ASA',
+                     'FORTIGATE',
+                     'LIST']
 
 # Argument Parser and help
 parser = argparse.ArgumentParser(formatter_class=SmartFormatter)
 parser.add_argument('source', type=str,
     help='R|Source to gather IP List\n'
-         'gnremy:     ' + url_gnremy + '\n'
-         'CPS:        ' + url_CPS + '\n'
+        f'gnremy:     {url_gnremy} \n'
+        f'CPS:        {url_CPS}\n'
          'Custom URL: Insert your custom URL to gather IP List, must be a raw IP list \n'
          'Local File: Path to your custom IP List File, must be a raw IP list')
 parser.add_argument('format', type=str,
@@ -41,18 +44,14 @@ IP_source = args.source
 firewall_format = args.format
 
 # Firewall Format validation
-if (
-    firewall_format.upper() != 'ASA' and
-    firewall_format.upper() != 'LIST' and
-    firewall_format.upper() != 'FORTIGATE'
-):
-    raise SystemExit(firewall_format + ' is not a valid output format.')
+if not firewall_format.upper() in supported_formats:
+    raise SystemExit(f'{firewall_format} is not a valid output format.')
 
 # URL Setting based on source argument
 if IP_source == 'gnremy':
     URL_source = 'gnremy'
     url = url_gnremy + '/raw'
-elif IP_source == 'CPS':
+elif IP_source.upper() == 'CPS':
     URL_source = 'CPS'
     url = url_CPS
 elif IP_source.startswith('http://') or IP_source.startswith('https://'):
@@ -102,10 +101,7 @@ if not os.path.isdir('./out'):
 # Creating and opening file to save output
 try:
     file = (
-        open('out/log4j_' +
-             firewall_format.upper() + '_' +
-             URL_source + '_' +
-             current_time + '.txt', 'w'))
+        open(f'out/log4j_{firewall_format.upper()}_{URL_source}_{current_time}.txt', 'w'))
 except:
     raise SystemExit()
 
@@ -119,15 +115,15 @@ if firewall_format.upper() == 'LIST':
 if firewall_format.upper() == 'ASA':
     file.write("object-group network Log4j_Blacklist_IP \n")
     for line in IP_list:
-        file.write("network-object host " + line.rstrip() + "\n")
+        file.write(f"network-object host {line.rstrip()}\n")
         IP_count += 1
 
 # Saving output to FortiGate format
 if firewall_format.upper() == 'FORTIGATE':
     file.write("config firewall address\n")
     for line in IP_list:
-        file.write(" edit Log4j_Host_" + line.rstrip() + "\n")
-        file.write("  set subnet " + line.rstrip() + " 255.255.255.255\n")
+        file.write(f" edit Log4j_Host_{line.rstrip()}\n")
+        file.write(f"  set subnet {line.rstrip()} 255.255.255.255\n")
         file.write(" next\n")
         IP_count += 1
 
@@ -135,12 +131,9 @@ if firewall_format.upper() == 'FORTIGATE':
     file.write("config firewall addrgrp\n")
     file.write(" edit Log4j_Blacklist_IP\n")
     for line in IP_list:
-        file.write("  append Log4j_Host_" + line.rstrip() + "\n")
+        file.write(f"  append Log4j_Host_{line.rstrip()}\n")
     file.write(" next\n")
     file.write(" end")
 
-print('Total IP from Source: ' + str(IP_count))
-print('File out/log4j_' +
-      firewall_format.upper() + '_' +
-      URL_source + '_' +
-      current_time + '.txt created.')
+print(f'Total IP from Source: {IP_count}')
+print(f'File out/log4j_{firewall_format.upper()}_{URL_source}_{current_time}.txt created.')
