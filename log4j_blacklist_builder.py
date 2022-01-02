@@ -4,6 +4,7 @@ import datetime
 import os.path
 import argparse
 
+
 # Override SmartFormatter from argparse to allow multiline help
 class SmartFormatter(argparse.HelpFormatter):
     def _split_lines(self, text, width):
@@ -13,8 +14,10 @@ class SmartFormatter(argparse.HelpFormatter):
         return argparse.HelpFormatter._split_lines(self, text, width)
 
 # Variable definitions
-url_gnremy = 'https://gist.githubusercontent.com/gnremy/c546c7911d5f876f263309d7161a7217'
-url_CPS = 'https://raw.githubusercontent.com/CriticalPathSecurity/Public-Intelligence-Feeds/master/log4j.txt'
+url_gnremy = ('https://gist.githubusercontent.com/'
+              'gnremy/c546c7911d5f876f263309d7161a7217')
+url_CPS = ('https://raw.githubusercontent.com/'
+           'CriticalPathSecurity/Public-Intelligence-Feeds/master/log4j.txt')
 current_time = datetime.datetime.now().strftime("%Y-%b-%d_%H-%M")
 IP_count = 0
 IP_list = []
@@ -24,21 +27,25 @@ source_is_local_file = False
 parser = argparse.ArgumentParser(formatter_class=SmartFormatter)
 parser.add_argument('source', type=str,
     help='R|Source to gather IP List\n'
-        'gnremy:     ' + url_gnremy + '\n'
-        'CPS:        ' + url_CPS + '\n'
-        'Custom URL: Insert your custom URL to gather IP List, must be a raw IP list \n'
-        'Local File: Path to your custom IP List File, must be a raw IP list')
+         'gnremy:     ' + url_gnremy + '\n'
+         'CPS:        ' + url_CPS + '\n'
+         'Custom URL: Insert your custom URL to gather IP List, must be a raw IP list \n'
+         'Local File: Path to your custom IP List File, must be a raw IP list')
 parser.add_argument('format', type=str,
     help='R|Firewall Format to generate the configuration \n'
-        'ASA:       Format the output to be used as command line configuration on Cisco ASA Firewalls.\n'
-        'FORTIGATE: Format the output to be used as command line configuration on Fortinet FortiGate Firewalls.\n'
-        'List:      Format the out as a IP list only.')
+         'ASA:       Format the output to be used as command line configuration on Cisco ASA Firewalls.\n'
+         'FORTIGATE: Format the output to be used as command line configuration on Fortinet FortiGate Firewalls.\n'
+         'List:      Format the out as a IP list only.')
 args = parser.parse_args()
 IP_source = args.source
 firewall_format = args.format
 
 # Firewall Format validation
-if firewall_format.upper() != 'ASA' and firewall_format.upper() != 'LIST' and firewall_format.upper() != 'FORTIGATE':
+if (
+    firewall_format.upper() != 'ASA' and
+    firewall_format.upper() != 'LIST' and
+    firewall_format.upper() != 'FORTIGATE'
+):
     raise SystemExit(firewall_format + ' is not a valid output format.')
 
 # URL Setting based on source argument
@@ -94,7 +101,11 @@ if not os.path.isdir('./out'):
 
 # Creating and opening file to save output
 try:
-    file = open('out/log4j_' + firewall_format.upper() + '_' + URL_source + '_' + current_time + '.txt', 'w')
+    file = (
+        open('out/log4j_' +
+             firewall_format.upper() + '_' +
+             URL_source + '_' +
+             current_time + '.txt', 'w'))
 except:
     raise SystemExit()
 
@@ -126,7 +137,10 @@ if firewall_format.upper() == 'FORTIGATE':
     for line in IP_list:
         file.write("  append Log4j_Host_" + line.rstrip() + "\n")
     file.write(" next\n")
-    file.write(" end") 
+    file.write(" end")
 
 print('Total IP from Source: ' + str(IP_count))
-print('File out/log4j_' + firewall_format.upper() + '_' + URL_source + '_' + current_time + '.txt created.')
+print('File out/log4j_' +
+      firewall_format.upper() + '_' +
+      URL_source + '_' +
+      current_time + '.txt created.')
